@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>FQA Support Dashboard | Manufacturing Quality Intelligence</title>
+
+<!-- Google Fonts: Outfit (display), Inter (body), JetBrains Mono (data/numbers) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+
+<!-- DataTables core + extensions -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+<style>
+/* ============================================================
+   1. DESIGN TOKENS
+   ============================================================ */
+:root{
+  --c-dark-green:#0f5132;
+  --c-dark-green-2:#0b3d26;
+  --c-green:#198754;
+  --c-green-light:#3fcf8e;
+  --c-green-pale:#e7f6ef;
+  --c-bg:#f1f6f3;
+  --c-surface:#ffffff;
+  --c-surface-glass:rgba(255,255,255,0.62);
+  --c-border:#e0e8e3;
+  --c-text:#122019;
+  --c-muted:#5f7268;
+  --c-muted-2:#8a9a92;
+  --c-ok:#198754;
+  --c-ng:#d6455a;
+  --c-claim:#d6455a;
+  --c-noclaim:#198754;
+  --c-amber:#e8a23d;
+  --r-sm:10px;
+  --r-md:16px;
+  --r-lg:22px;
+  --sh-sm:0 2px 8px rgba(15,81,50,0.07);
+  --sh-md:0 8px 24px rgba(15,81,50,0.10);
+  --sh-lg:0 20px 48px rgba(15,81,50,0.16);
+  --f-display:'Outfit',sans-serif;
+  --f-body:'Inter',sans-serif;
+  --f-mono:'JetBrains Mono',monospace;
+  --header-h:auto;
+}
+
+/* ============================================================
+   2. RESET & BASE
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:var(--f-body);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(25,135,84,0.07), transparent 45%),
+    radial-gradient(circle at 100% 0%, rgba(15,81,50,0.06), transparent 40%),
+    var(--c-bg);
+  color:var(--c-text);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit;cursor:pointer;}
+input,select{font-family:inherit;}
+::selection{background:var(--c-green-light);color:#06251a;}
+a{color:var(--c-dark-green);}
+::-webkit-scrollbar{height:8px;width:8px;}
+::-webkit-scrollbar-thumb{background:#c4d6cc;border-radius:8px;}
+::-webkit-scrollbar-track{background:transparent;}
+:focus-visible{outline:2px solid var(--c-green);outline-offset:2px;}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;}
+}
+
+.app-shell{max-width:1440px;margin:0 auto;padding:18px 22px 60px;}
+
+/* ============================================================
+   3. HEADER
+   ============================================================ */
+.dash-header{
+  position:sticky;top:0;z-index:40;
+  background:var(--c-surface-glass);
+  backdrop-filter:blur(14px) saturate(140%);
+  -webkit-backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid var(--c-border);
+  border-radius:var(--r-lg);
+  padding:16px 22px;
+  margin-bottom:18px;
+  box-shadow:var(--sh-sm);
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  flex-wrap:wrap;
+  overflow:hidden;
+}
+.dash-header::before{
+  content:"";position:absolute;left:0;top:0;width:5px;height:100%;
+  background:linear-gradient(180deg,var(--c-dark-green),var(--c-green-light));
+}
+.header-id{display:flex;align-items:center;gap:14px;padding-left:6px;}
+.header-mark{
+  width:46px;height:46px;border-radius:13px;flex:0 0 auto;
+  background:linear-gradient(150deg,var(--c-dark-green),var(--c-green));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 16px rgba(15,81,50,0.30);
+}
+.header-mark svg{width:24px;height:24px;}
+.header-text h1{
+  font-family:var(--f-display);font-weight:700;font-size:1.32rem;letter-spacing:.2px;
+  margin:0;color:var(--c-dark-green-2);
+}
+.header-text p{
+  margin:2px 0 0;font-size:.78rem;color:var(--c-muted);
+  font-weight:500;letter-spacing:.3px;text-transform:uppercase;
+}
+.header-meta{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.meta-block{text-align:right;}
+.meta-label{font-size:.68rem;color:var(--c-muted-2);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.meta-value{font-family:var(--f-mono);font-size:.92rem;font-weight:600;color:var(--c-text);}
+.live-pulse{display:inline-flex;align-items:center;gap:6px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c-green);animation:dotPulse 1.8s infinite;}
+@keyframes dotPulse{
+  0%{box-shadow:0 0 0 0 rgba(25,135,84,.55);}
+  70%{box-shadow:0 0 0 8px rgba(25,135,84,0);}
+  100%{box-shadow:0 0 0 0 rgba(25,135,84,0);}
+}
+.dot.offline{background:var(--c-ng);animation:none;}
+.btn-refresh{
+  display:flex;align-items:center;gap:8px;
+  background:var(--c-dark-green);color:#fff;border:none;
+  padding:10px 16px;border-radius:var(--r-sm);font-weight:600;font-size:.84rem;
+  box-shadow:var(--sh-sm);transition:transform .15s ease, box-shadow .15s ease, background .2s;
+}
+.btn-refresh:hover{background:var(--c-green);box-shadow:var(--sh-md);transform:translateY(-1px);}
+.btn-refresh:active{transform:translateY(0);}
+.btn-refresh svg{width:16px;height:16px;transition:transform .6s ease;}
+.btn-refresh.spinning svg{animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ============================================================
+   4. TAB NAVIGATION
+   ============================================================ */
+.tab-nav{
+  display:flex;gap:8px;overflow-x:auto;padding:6px;margin-bottom:20px;
+  background:var(--c-surface);border:1px solid var(--c-border);border-radius:999px;
+  box-shadow:var(--sh-sm);scrollbar-width:none;
+}
+.tab-nav::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex:0 0 auto;border:none;background:transparent;color:var(--c-muted);
+  padding:10px 18px;border-radius:999px;font-weight:600;font-size:.84rem;
+  white-space:nowrap;transition:all .2s ease;position:relative;
+}
+.tab-btn:hover{color:var(--c-dark-green-2);background:var(--c-green-pale);}
+.tab-btn.active{
+  background:linear-gradient(135deg,var(--c-dark-green),var(--c-green));
+  color:#fff;box-shadow:0 4px 12px rgba(15,81,50,.30);
+}
+
+/* ============================================================
+   5. KPI CARDS
+   ============================================================ */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px;margin-bottom:22px;
+}
+.kpi-card{
+  position:relative;background:var(--c-surface);border:1px solid var(--c-border);
+  border-radius:var(--r-md);padding:18px 18px 16px;box-shadow:var(--sh-sm);
+  overflow:hidden;transition:transform .2s ease, box-shadow .2s ease;
+  animation:fadeIn .4s ease both;
+}
+.kpi-card:hover{transform:translateY(-3px);box-shadow:var(--sh-md);}
+.kpi-card::after{
+  content:"";position:absolute;left:0;top:0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--c-dark-green),var(--c-green-light));
+  opacity:.85;
+}
+.kpi-card.flash{animation:flashUpdate .9s ease;}
+@keyframes flashUpdate{
+  0%{box-shadow:0 0 0 0 rgba(25,135,84,.45);}
+  60%{box-shadow:0 0 0 9px rgba(25,135,84,0);}
+  100%{box-shadow:var(--sh-sm);}
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.kpi-icon{
+  width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--c-green-pale);color:var(--c-dark-green);flex:0 0 auto;
+}
+.kpi-icon svg{width:19px;height:19px;}
+.kpi-icon.ng{background:#fdecee;color:var(--c-ng);}
+.kpi-icon.claim{background:#fdecee;color:var(--c-claim);}
+.kpi-icon.rate{background:#fdf3e4;color:var(--c-amber);}
+.kpi-value{
+  font-family:var(--f-mono);font-weight:700;font-size:1.7rem;letter-spacing:-.5px;
+  color:var(--c-text);line-height:1.1;
+}
+.kpi-title{margin-top:4px;font-size:.76rem;color:var(--c-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;}
+
+/* ============================================================
+   6. CHARTS
+   ============================================================ */
+.charts-section{display:flex;flex-direction:column;gap:16px;margin-bottom:22px;}
+.charts-row{display:grid;gap:16px;}
+.charts-row-2col{grid-template-columns:repeat(2,1fr);}
+.charts-row-3col{grid-template-columns:repeat(3,1fr);}
+.chart-card{
+  background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);
+  padding:18px;box-shadow:var(--sh-sm);display:flex;flex-direction:column;min-width:0;
+}
+.chart-card.wide{grid-column:1 / -1;}
+.chart-card h3{
+  font-family:var(--f-display);font-size:.94rem;font-weight:600;margin:0 0 12px;
+  color:var(--c-dark-green-2);display:flex;align-items:center;gap:8px;
+}
+.chart-card h3 .chip{
+  font-family:var(--f-mono);font-size:.66rem;background:var(--c-green-pale);color:var(--c-dark-green);
+  padding:2px 7px;border-radius:6px;font-weight:600;
+}
+.chart-canvas-wrap{position:relative;height:280px;}
+.chart-card.wide .chart-canvas-wrap{height:320px;}
+.chart-empty{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  color:var(--c-muted-2);font-size:.82rem;font-weight:500;
+}
+
+/* Claim Detail panel (under the Claim vs No Claim doughnut) */
+.claim-detail{margin-top:14px;border-top:1px solid var(--c-border);padding-top:12px;}
+.claim-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-size:.78rem;font-weight:600;color:var(--c-dark-green-2);}
+.claim-detail-scroll{max-height:190px;overflow-y:auto;border:1px solid var(--c-border);border-radius:var(--r-sm);}
+
+/* Compact dashboard-card tables (NG Issue Records, Operator Ranking, NG Issue Summary, Claim Detail) */
+.ng-table-wrap{overflow-x:auto;}
+.scroll-tbl{max-height:280px;overflow-y:auto;border:1px solid var(--c-border);border-radius:var(--r-sm);}
+.compact-table{width:100%;border-collapse:collapse;font-size:.78rem;}
+.compact-table thead th{
+  position:sticky;top:0;background:var(--c-green-pale);color:var(--c-dark-green-2);
+  text-transform:uppercase;font-size:.64rem;letter-spacing:.3px;font-weight:700;
+  padding:7px 9px;text-align:left;white-space:nowrap;
+}
+.compact-table td{padding:7px 9px;border-bottom:1px solid #eef2f0;color:var(--c-text);white-space:nowrap;}
+.compact-table td.num{font-family:var(--f-mono);text-align:right;}
+
+/* ============================================================
+   7. FILTERS
+   ============================================================ */
+.filters-card{
+  background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);
+  padding:18px;box-shadow:var(--sh-sm);margin-bottom:22px;
+}
+.filters-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.filters-head h3{
+  font-family:var(--f-display);font-size:.94rem;font-weight:600;margin:0;
+  color:var(--c-dark-green-2);display:flex;align-items:center;gap:8px;
+}
+.btn-clear{
+  background:transparent;border:1px solid var(--c-border);color:var(--c-muted);
+  font-size:.78rem;font-weight:600;padding:7px 13px;border-radius:var(--r-sm);
+  transition:all .15s ease;
+}
+.btn-clear:hover{border-color:var(--c-ng);color:var(--c-ng);background:#fdecee;}
+.filters-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;
+}
+.filter-field{display:flex;flex-direction:column;gap:5px;}
+.filter-field.span-2{grid-column:span 2;}
+.filter-field label{font-size:.68rem;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.4px;}
+.filter-field input,.filter-field select{
+  padding:9px 11px;border:1px solid var(--c-border);border-radius:var(--r-sm);
+  font-size:.84rem;color:var(--c-text);background:#fbfdfc;transition:border-color .15s ease, box-shadow .15s ease;
+}
+.filter-field input:focus,.filter-field select:focus{
+  border-color:var(--c-green);box-shadow:0 0 0 3px rgba(25,135,84,.12);outline:none;
+}
+.filter-field .search-wrap{position:relative;}
+.filter-field .search-wrap svg{
+  position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--c-muted-2);
+}
+.filter-field .search-wrap input{padding-left:30px;}
+
+/* ============================================================
+   8. TABLE
+   ============================================================ */
+.table-card{
+  background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);
+  padding:18px;box-shadow:var(--sh-sm);position:relative;
+}
+.table-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+.table-head h3{font-family:var(--f-display);font-size:.94rem;font-weight:600;margin:0;color:var(--c-dark-green-2);}
+.badge-count{
+  font-family:var(--f-mono);font-size:.72rem;font-weight:600;background:var(--c-green-pale);
+  color:var(--c-dark-green);padding:4px 10px;border-radius:999px;
+}
+.table-scroll{overflow-x:auto;}
+table.dataTable{width:100% !important;border-collapse:separate !important;border-spacing:0;font-size:.81rem;}
+table.dataTable thead th{
+  background:var(--c-green-pale);color:var(--c-dark-green-2);font-weight:700;
+  border-bottom:1px solid var(--c-border) !important;white-space:nowrap;font-size:.72rem;
+  text-transform:uppercase;letter-spacing:.3px;
+}
+table.dataTable tbody td{padding:8px 10px;border-bottom:1px solid #eef2f0;color:var(--c-text);}
+table.dataTable tbody tr:hover{background:#f5fbf8;}
+table.dataTable td.num-cell{font-family:var(--f-mono);text-align:right;}
+.flag-pill{
+  display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;font-weight:700;
+  font-family:var(--f-mono);
+}
+.flag-pill.yes{background:#fdecee;color:var(--c-claim);}
+.flag-pill.no{background:var(--c-green-pale);color:var(--c-noclaim);}
+.ng-flag{color:var(--c-ng);font-weight:700;}
+.dt-buttons{display:flex;gap:6px;flex-wrap:wrap;}
+.dt-button{
+  background:#fff !important;border:1px solid var(--c-border) !important;color:var(--c-dark-green-2) !important;
+  border-radius:8px !important;font-weight:600 !important;font-size:.74rem !important;
+  padding:7px 12px !important;box-shadow:none !important;font-family:var(--f-body) !important;
+}
+.dt-button:hover{background:var(--c-green-pale) !important;border-color:var(--c-green) !important;}
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select{
+  border:1px solid var(--c-border);border-radius:8px;padding:6px 9px;font-size:.8rem;
+}
+.dataTables_wrapper .dataTables_info,.dataTables_wrapper .dataTables_paginate{font-size:.78rem;color:var(--c-muted);}
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{
+  background:var(--c-dark-green) !important;color:#fff !important;border-radius:6px;border:none !important;
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button{border-radius:6px;}
+table.dataTable.dtr-column>tbody>tr>td.dtr-control:before{
+  background-color:var(--c-green);box-shadow:none;
+}
+.table-loading{
+  position:absolute;inset:0;background:rgba(255,255,255,.75);display:flex;align-items:center;
+  justify-content:center;border-radius:var(--r-md);z-index:5;backdrop-filter:blur(2px);
+}
+.table-loading.hidden{display:none;}
+
+/* ============================================================
+   9. SPINNER / GLOBAL LOADING / ERROR
+   ============================================================ */
+.spinner{
+  width:42px;height:42px;border-radius:50%;
+  border:4px solid var(--c-green-pale);border-top-color:var(--c-dark-green);
+  animation:spin .8s linear infinite;
+}
+.spinner.sm{width:20px;height:20px;border-width:3px;}
+.center-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:70px 20px;text-align:center;
+}
+.center-state p{margin:0;color:var(--c-muted);font-size:.88rem;}
+.error-card{
+  background:var(--c-surface);border:1px solid #f7d4d8;border-radius:var(--r-lg);
+  padding:50px 30px;box-shadow:var(--sh-md);text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+}
+.error-card .err-icon{
+  width:58px;height:58px;border-radius:50%;background:#fdecee;color:var(--c-ng);
+  display:flex;align-items:center;justify-content:center;
+}
+.error-card .err-icon svg{width:28px;height:28px;}
+.error-card h2{margin:0;font-family:var(--f-display);font-size:1.15rem;color:var(--c-text);}
+.error-card p{margin:0;color:var(--c-muted);font-size:.86rem;max-width:420px;}
+.error-card .err-detail{
+  font-family:var(--f-mono);font-size:.72rem;color:var(--c-muted-2);background:#f7f9f8;
+  padding:8px 12px;border-radius:8px;max-width:100%;overflow-wrap:break-word;
+}
+.btn-retry{
+  background:var(--c-dark-green);color:#fff;border:none;padding:11px 22px;border-radius:var(--r-sm);
+  font-weight:600;font-size:.86rem;box-shadow:var(--sh-sm);transition:all .15s ease;
+}
+.btn-retry:hover{background:var(--c-green);transform:translateY(-1px);box-shadow:var(--sh-md);}
+
+.refresh-toast{
+  position:fixed;bottom:96px;right:22px;background:var(--c-text);color:#fff;
+  padding:11px 18px;border-radius:var(--r-sm);font-size:.8rem;font-weight:500;
+  box-shadow:var(--sh-lg);display:flex;align-items:center;gap:10px;z-index:80;
+  transform:translateY(20px);opacity:0;transition:all .3s ease;pointer-events:none;
+}
+.refresh-toast.show{transform:translateY(0);opacity:1;}
+.refresh-toast.warn{background:#7a2530;}
+
+.hidden{display:none !important;}
+.fade-in{animation:fadeIn .35s ease both;}
+
+/* ============================================================
+   10. ADD RECORD — FLOATING BUTTON & MODAL
+   ============================================================ */
+.fab-add-record{
+  position:fixed;bottom:24px;right:24px;z-index:70;
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,var(--c-dark-green),var(--c-green));color:#fff;
+  border:none;padding:14px 20px;border-radius:999px;font-weight:700;font-size:.86rem;
+  box-shadow:0 10px 24px rgba(15,81,50,.35);transition:transform .18s ease, box-shadow .18s ease;
+}
+.fab-add-record:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 30px rgba(15,81,50,.42);}
+.fab-add-record:active{transform:translateY(0) scale(.98);}
+.fab-add-record svg{width:18px;height:18px;}
+
+.modal-overlay{
+  position:fixed;inset:0;z-index:90;background:rgba(11,28,20,.48);backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:18px;
+  opacity:0;transition:opacity .2s ease;
+}
+.modal-overlay.show{opacity:1;}
+.modal-overlay.hidden{display:none !important;}
+.modal-box{
+  background:var(--c-surface);border-radius:var(--r-lg);box-shadow:var(--sh-lg);
+  width:100%;max-width:640px;max-height:90vh;display:flex;flex-direction:column;
+  overflow:hidden;transform:translateY(14px) scale(.98);transition:transform .22s ease;
+}
+.modal-overlay.show .modal-box{transform:translateY(0) scale(1);}
+.modal-head{
+  position:relative;padding:20px 56px 14px 22px;border-bottom:1px solid var(--c-border);
+  background:var(--c-green-pale);flex:0 0 auto;
+}
+.modal-head h2{margin:0;font-family:var(--f-display);font-size:1.05rem;font-weight:700;color:var(--c-dark-green-2);}
+.modal-head-sub{margin-top:3px;font-family:var(--f-mono);font-size:.72rem;color:var(--c-muted);}
+.modal-close{
+  position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:9px;border:none;
+  background:rgba(255,255,255,.65);color:var(--c-dark-green-2);display:flex;align-items:center;justify-content:center;
+  transition:background .15s ease;
+}
+.modal-close:hover{background:#fff;}
+.modal-close svg{width:16px;height:16px;}
+#addRecordForm{
+  display:flex;flex-direction:column;flex:1 1 auto;min-height:0;overflow:hidden;
+}
+/* flex:1 + min-height:0 is what lets this panel shrink and scroll inside the
+   fixed-max-height modal box, instead of growing past it and pushing the
+   footer (Save/Cancel) off-screen */
+.modal-body{
+  padding:20px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  flex:1 1 auto;min-height:0;
+}
+.form-error{
+  background:#fdecee;color:var(--c-claim);border:1px solid #f7d4d8;border-radius:var(--r-sm);
+  padding:9px 13px;font-size:.8rem;font-weight:600;margin-bottom:14px;
+}
+.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.form-field{display:flex;flex-direction:column;gap:5px;}
+.form-field.span-2{grid-column:span 2;}
+.form-field label{font-size:.72rem;font-weight:600;color:var(--c-muted);text-transform:uppercase;letter-spacing:.3px;}
+.req-mark{color:var(--c-claim);}
+.form-field input[type="text"],.form-field input[type="date"],.form-field input[type="time"],
+.form-field input[type="number"],.form-field textarea{
+  padding:9px 11px;border:1px solid var(--c-border);border-radius:var(--r-sm);
+  font-size:.84rem;color:var(--c-text);background:#fbfdfc;font-family:var(--f-body);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.form-field textarea{resize:vertical;min-height:42px;}
+.form-field input:focus,.form-field textarea:focus{
+  border-color:var(--c-green);box-shadow:0 0 0 3px rgba(25,135,84,.12);outline:none;
+}
+.form-field input.field-invalid{border-color:var(--c-ng);box-shadow:0 0 0 3px rgba(214,69,90,.12);}
+.form-field-checkbox-pair .check-row{
+  display:flex;align-items:center;gap:10px;background:#fbfdfc;border:1px solid var(--c-border);
+  border-radius:var(--r-sm);padding:8px 11px;height:38px;
+}
+.check-label{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;color:var(--c-text);text-transform:none;letter-spacing:0;white-space:nowrap;}
+.check-label input[type="checkbox"]{width:15px;height:15px;accent-color:var(--c-green);}
+.form-field-checkbox-pair input[type="number"]{
+  flex:1;min-width:0;border:1px solid var(--c-border);border-radius:8px;padding:6px 8px;font-size:.82rem;
+}
+.modal-footer{
+  display:flex;justify-content:flex-end;gap:10px;padding:16px 22px;border-top:1px solid var(--c-border);
+  flex:0 0 auto;background:var(--c-surface);
+}
+.btn-save-record{
+  display:flex;align-items:center;gap:8px;background:var(--c-dark-green);color:#fff;border:none;
+  padding:10px 20px;border-radius:var(--r-sm);font-weight:700;font-size:.84rem;
+  box-shadow:var(--sh-sm);transition:background .2s ease, transform .15s ease;
+}
+.btn-save-record:hover{background:var(--c-green);transform:translateY(-1px);}
+.btn-save-record:disabled{opacity:.7;cursor:not-allowed;transform:none;}
+
+@media (max-width: 620px){
+  .form-grid{grid-template-columns:1fr;}
+  .form-field.span-2{grid-column:span 1;}
+  .fab-add-record span{display:none;}
+  .fab-add-record{padding:14px;border-radius:50%;}
+  .refresh-toast{right:14px;bottom:88px;left:14px;}
+}
+
+/* ============================================================
+   11. RESPONSIVE
+   ============================================================ */
+@media (max-width: 860px){
+  .app-shell{padding:14px 12px 50px;}
+  .header-meta{width:100%;justify-content:space-between;}
+  .filter-field.span-2{grid-column:span 1;}
+  .kpi-value{font-size:1.4rem;}
+  .charts-row-3col{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width: 520px){
+  .header-text h1{font-size:1.08rem;}
+  .header-text p{font-size:.68rem;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);}
+  .chart-canvas-wrap{height:230px;}
+  .charts-row-2col,.charts-row-3col{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============================================================
+       SECTION 1: HEADER
+       ============================================================ -->
+  <header class="dash-header">
+    <div class="header-id">
+      <div class="header-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div class="header-text">
+        <h1>FQA Support Dashboard</h1>
+        <p>Manufacturing Quality Intelligence</p>
+      </div>
+    </div>
+    <div class="header-meta">
+      <div class="meta-block">
+        <div class="meta-label">Local Time</div>
+        <div class="meta-value" id="clockNow">--:--:--</div>
+      </div>
+      <div class="meta-block">
+        <div class="meta-label">Last Updated</div>
+        <div class="meta-value live-pulse"><span class="dot" id="liveDot"></span><span id="lastUpdated">—</span></div>
+      </div>
+      <button class="btn-refresh" id="btnRefresh" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================
+       SECTION 2: TAB NAVIGATION
+       ============================================================ -->
+  <nav class="tab-nav" id="tabNav" role="tablist" aria-label="Sheet selector"></nav>
+
+  <!-- MAIN DASHBOARD CONTENT (hidden during initial load / error) -->
+  <div id="dashboardContent">
+
+    <!-- ============================================================
+         SECTION 3: FILTERS
+         ============================================================ -->
+    <section class="filters-card">
+      <div class="filters-head">
+        <h3>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          Filters
+        </h3>
+        <button class="btn-clear" id="btnClearFilters" type="button">Clear all</button>
+      </div>
+      <div class="filters-grid">
+        <div class="filter-field span-2">
+          <label for="fSearch">Global Search</label>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" id="fSearch" placeholder="Search part no, name, note...">
+          </div>
+        </div>
+        <div class="filter-field hidden" id="filterNameWrap">
+          <label for="fName">Name</label>
+          <select id="fName"><option value="">All Names</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fDateFrom">Date From</label>
+          <input type="date" id="fDateFrom">
+        </div>
+        <div class="filter-field">
+          <label for="fDateTo">Date To</label>
+          <input type="date" id="fDateTo">
+        </div>
+        <div class="filter-field">
+          <label for="fShift">Shift</label>
+          <select id="fShift"><option value="">All Shifts</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fPlant">Plant</label>
+          <select id="fPlant"><option value="">All Plants</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fCustomer">Customer</label>
+          <select id="fCustomer"><option value="">All Customers</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fIssueArea">Issue Area</label>
+          <select id="fIssueArea"><option value="">All Issue Areas</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fPartName">Part Name</label>
+          <select id="fPartName"><option value="">All Part Names</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fPartNo">Part No</label>
+          <select id="fPartNo"><option value="">All Part Numbers</option></select>
+        </div>
+        <div class="filter-field">
+          <label for="fClaim">Claim</label>
+          <select id="fClaim">
+            <option value="">All</option>
+            <option value="claim">Claim Only</option>
+            <option value="noclaim">No Claim Only</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         SECTION 4: KPI CARDS
+         ============================================================ -->
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <!-- ============================================================
+         SECTION 5: CHARTS
+         ============================================================ -->
+    <section class="charts-section">
+
+      <!-- Row 1: Claim vs No Claim + Monthly Claim Trend -->
+      <div class="charts-row charts-row-2col">
+        <div class="chart-card">
+          <h3>Claim vs No Claim <span class="chip">Doughnut</span></h3>
+          <div class="chart-canvas-wrap"><canvas id="chartClaim"></canvas></div>
+          <div class="claim-detail">
+            <div class="claim-detail-head">
+              <span>Claim Detail</span>
+              <span class="badge-count" id="claimDetailCount">0 records</span>
+            </div>
+            <div class="claim-detail-scroll" id="claimDetailScroll">
+              <table class="compact-table">
+                <thead><tr><th>Part No</th><th>Part Name</th><th>Issue Area</th><th>Customer</th><th>Note</th><th>Date</th></tr></thead>
+                <tbody id="claimDetailBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Monthly Claim Trend <span class="chip">Line</span></h3>
+          <div class="chart-canvas-wrap"><canvas id="chartClaimTrend"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 2: NG Issue Records (monthly table) + Monthly NG Trend -->
+      <div class="charts-row charts-row-2col">
+        <div class="chart-card">
+          <h3>NG Issue Records <span class="chip">Monthly</span></h3>
+          <div class="ng-table-wrap">
+            <table class="compact-table">
+              <thead><tr><th>Month</th><th>NG Records</th><th>Total NG Qty</th><th>Top Issue Area</th><th>Top Part No</th></tr></thead>
+              <tbody id="ngMonthlyTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Monthly NG Trend <span class="chip">Line</span></h3>
+          <div class="chart-canvas-wrap"><canvas id="chartNgTrend"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Row 3: Issue Area Distribution + Operator Ranking + NG Issue Records Summary -->
+      <div class="charts-row charts-row-3col">
+        <div class="chart-card">
+          <h3>Issue Area Distribution <span class="chip">Pie</span></h3>
+          <div class="chart-canvas-wrap"><canvas id="chartIssue"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Operator Ranking <span class="chip">Top 10</span></h3>
+          <div class="ng-table-wrap scroll-tbl">
+            <table class="compact-table">
+              <thead><tr><th>Rank</th><th>Operator</th><th>Records</th><th>OK Qty</th><th>NG Qty</th><th>Claims</th></tr></thead>
+              <tbody id="operatorRankingBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>NG Issue Records Summary <span class="chip">Top 10</span></h3>
+          <div class="ng-table-wrap scroll-tbl">
+            <table class="compact-table">
+              <thead><tr><th>Part No</th><th>Part Name</th><th>Issue Area</th><th>NG Records</th><th>NG Qty</th></tr></thead>
+              <tbody id="ngProblemTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         SECTION 6: DATA TABLE
+         ============================================================ -->
+    <section class="table-card">
+      <div class="table-head">
+        <h3 id="tableTitle">Inspection Records</h3>
+        <span class="badge-count" id="rowCountBadge">0 records</span>
+      </div>
+      <div class="table-scroll">
+        <table id="dataTable" class="display" style="width:100%">
+          <thead>
+            <tr>
+              <th>NO</th><th>Date</th><th>Shift</th><th>Name</th><th>Plant</th><th>Time</th>
+              <th>Part Name</th><th>Part No</th><th>OK Qty</th><th>NG Qty</th><th>Issue Area</th>
+              <th>Customer</th><th>Claim</th><th>No Claim</th><th>Note</th><th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-loading" id="tableLoading"><div class="spinner sm"></div></div>
+    </section>
+
+  </div><!-- /dashboardContent -->
+
+  <!-- ============================================================
+       GLOBAL LOADING STATE (first load)
+       ============================================================ -->
+  <div class="center-state" id="globalLoading">
+    <div class="spinner"></div>
+    <p>Loading FQA support data...</p>
+  </div>
+
+  <!-- ============================================================
+       GLOBAL ERROR STATE
+       ============================================================ -->
+  <div class="hidden" id="globalError">
+    <div class="error-card">
+      <div class="err-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+      </div>
+      <h2>Unable to load data</h2>
+      <p>We couldn't reach the FQA Support data source. Check your connection and try again.</p>
+      <div class="err-detail" id="errDetail"></div>
+      <button class="btn-retry" id="btnRetry" type="button">Retry</button>
+    </div>
+  </div>
+
+  <div class="refresh-toast" id="refreshToast"><div class="spinner sm"></div><span id="refreshToastText">Refreshing data...</span></div>
+
+  <!-- ============================================================
+       FLOATING "+ ADD RECORD" BUTTON
+       ============================================================ -->
+  <button class="fab-add-record" id="btnOpenAddRecord" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Add Record</span>
+  </button>
+
+  <!-- ============================================================
+       ADD RECORD MODAL
+       ============================================================ -->
+  <div class="modal-overlay hidden" id="addRecordOverlay">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="addRecordTitle">
+      <div class="modal-head">
+        <h2 id="addRecordTitle">Add New Record</h2>
+        <div class="modal-head-sub" id="addRecordSheetLabel">Saving to —</div>
+        <button class="modal-close" id="btnCloseAddRecord" type="button" aria-label="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="addRecordForm" novalidate>
+        <div class="modal-body">
+          <div class="form-error hidden" id="addRecordError"></div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label for="fldDate">Date <span class="req-mark">*</span></label>
+              <input type="date" id="fldDate">
+            </div>
+            <div class="form-field">
+              <label for="fldShift">Shift <span class="req-mark">*</span></label>
+              <input type="text" id="fldShift" list="dlShift" placeholder="e.g. Day / Night">
+              <datalist id="dlShift"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldName">Name <span class="req-mark">*</span></label>
+              <input type="text" id="fldName" list="dlName" placeholder="Operator name">
+              <datalist id="dlName"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldPlant">Plant <span class="req-mark">*</span></label>
+              <input type="text" id="fldPlant" list="dlPlant" placeholder="Plant">
+              <datalist id="dlPlant"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldTime">Time</label>
+              <input type="time" id="fldTime">
+            </div>
+            <div class="form-field">
+              <label for="fldPartName">Part Name <span class="req-mark">*</span></label>
+              <input type="text" id="fldPartName" list="dlPartName" placeholder="Part name">
+              <datalist id="dlPartName"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldPartNo">Part No <span class="req-mark">*</span></label>
+              <input type="text" id="fldPartNo" list="dlPartNo" placeholder="Part number">
+              <datalist id="dlPartNo"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldIssueArea">Issue Area</label>
+              <input type="text" id="fldIssueArea" list="dlIssueArea" placeholder="Issue area">
+              <datalist id="dlIssueArea"></datalist>
+            </div>
+            <div class="form-field">
+              <label for="fldCustomer">Customer</label>
+              <input type="text" id="fldCustomer" list="dlCustomer" placeholder="Customer">
+              <datalist id="dlCustomer"></datalist>
+            </div>
+            <div class="form-field form-field-checkbox-pair">
+              <div class="check-row">
+                <label class="check-label"><input type="checkbox" id="fldOk"> OK</label>
+                <input type="number" id="fldOkQty" min="0" step="1" placeholder="OK Qty">
+              </div>
+            </div>
+            <div class="form-field form-field-checkbox-pair">
+              <div class="check-row">
+                <label class="check-label"><input type="checkbox" id="fldNg"> NG</label>
+                <input type="number" id="fldNgQty" min="0" step="1" placeholder="NG Qty">
+              </div>
+            </div>
+            <div class="form-field form-field-checkbox-pair">
+              <div class="check-row">
+                <label class="check-label"><input type="checkbox" id="fldClaim"> Claim</label>
+                <label class="check-label"><input type="checkbox" id="fldNoClaim"> No Claim</label>
+              </div>
+            </div>
+            <div class="form-field span-2">
+              <label for="fldNote">Note</label>
+              <textarea id="fldNote" rows="2" placeholder="Optional note..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-clear" id="btnCancelAddRecord">Cancel</button>
+          <button type="submit" class="btn-save-record" id="btnSaveRecord">
+            <span class="spinner sm hidden" id="saveRecordSpinner"></span>
+            <span id="saveRecordLabel">Save Record</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
+<!-- ============================================================
+     EXTERNAL LIBRARIES (CDN)
+     ============================================================ -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<script>
+/* ================================================================
+   FQA SUPPORT DASHBOARD — APPLICATION LOGIC
+   Sections:
+     A. Config & State
+     B. Helpers (formatting, normalization, debounce)
+     C. Data Fetching
+     D. Tab Management
+     E. Filtering
+     F. KPI Rendering
+     G. Chart Rendering
+     H. Table (DataTables) Rendering
+     I. Clock & Auto-Refresh
+     J. Event Wiring & Bootstrap
+   ================================================================ */
+
+/* ----------------------------------------------------------------
+   A. CONFIG & STATE
+   ---------------------------------------------------------------- */
+const CONFIG = {
+  API_URL: 'https://script.google.com/macros/s/AKfycbw598JtbP6nLFs2RwfoM5yvaH-q2fvyoZPPmLzuK-uUCJy8HV2iuTEzqpfDxXifDpww/exec',
+  REFRESH_MS: 60000,
+  TABS: [
+    { id: 'summary', label: 'Summary FQA Support MMth', matchPrefix: 'summary' },
+    { id: 'K.Prachapong', label: 'K.Prachapong' },
+    { id: 'K.Jirawat', label: 'K.Jirawat' },
+    { id: 'K.Thitisan', label: 'K.Thitisan' },
+    { id: 'K.Kritsana', label: 'K.Kritsana' },
+    { id: 'K.Ronnachai', label: 'K.Ronnachai' }
+  ],
+  CHART_COLORS: {
+    ok: '#198754', ng: '#d6455a', claim: '#d6455a', noclaim: '#198754',
+    palette: ['#0f5132', '#198754', '#3fcf8e', '#e8a23d', '#5b8c75', '#7fb9a0', '#b9d8c8', '#2f7d57', '#d6455a', '#9c6b3e']
+  }
+};
+
+const state = {
+  rawData: null,        // full parsed API JSON
+  sheetKeyMap: {},       // tabId -> actual key found in rawData
+  activeTab: 'summary',
+  filters: { search: '', dateFrom: '', dateTo: '', shift: '', plant: '', customer: '', issueArea: '', partName: '', partNo: '', claimFilter: '', name: '' },
+  charts: { claim: null, claimTrend: null, ngTrend: null, issue: null },
+  dataTable: null,
+  refreshTimer: null,
+  clockTimer: null,
+  isRefreshing: false,
+  hasLoadedOnce: false,
+  savingRecord: false
+};
+
+/* ----------------------------------------------------------------
+   B. HELPERS
+   ---------------------------------------------------------------- */
+
+// Debounce: limits how often a function fires (used for search input)
+function debounce(fn, wait) {
+  let t;
+  return function (...args) {
+    clearTimeout(t);
+    t = setTimeout(() => fn.apply(this, args), wait);
+  };
+}
+
+// Case/space/underscore-insensitive field lookup on a raw row object
+function getField(row, candidates) {
+  if (!row) return '';
+  for (const name of candidates) {
+    if (row[name] !== undefined && row[name] !== null) return row[name];
+  }
+  const lowerMap = {};
+  Object.keys(row).forEach(k => { lowerMap[k.toLowerCase().replace(/[\s_]/g, '')] = row[k]; });
+  for (const name of candidates) {
+    const key = name.toLowerCase().replace(/[\s_]/g, '');
+    if (lowerMap[key] !== undefined && lowerMap[key] !== null) return lowerMap[key];
+  }
+  return '';
+}
+
+// Coerce any value to a finite number, defaulting to 0
+function toNumber(val) {
+  if (typeof val === 'number') return isFinite(val) ? val : 0;
+  const n = parseFloat(String(val).replace(/,/g, ''));
+  return isFinite(n) ? n : 0;
+}
+
+// Coerce Claim/NoClaim style values (numbers, "Yes"/"No", booleans) into 0/1
+function toFlag(val) {
+  if (typeof val === 'number') return val > 0 ? val : 0;
+  const s = String(val).trim().toLowerCase();
+  if (s === '') return 0;
+  if (!isNaN(parseFloat(s))) return parseFloat(s);
+  if (['yes', 'y', 'true', 'claim', 'x', '\u2713'].includes(s)) return 1;
+  return 0;
+}
+
+// Parse a date string into a Date object, tolerant of multiple formats
+function parseDateSafe(val) {
+  if (!val) return null;
+  if (val instanceof Date) return isNaN(val.getTime()) ? null : val;
+  const s = String(val).trim();
+  let d = new Date(s);
+  if (!isNaN(d.getTime())) return d;
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    let [, a, b, y] = m;
+    if (y.length === 2) y = '20' + y;
+    d = new Date(`${y}-${b.padStart(2, '0')}-${a.padStart(2, '0')}`);
+    if (!isNaN(d.getTime())) return d;
+  }
+  return null;
+}
+
+// Format a date for display (YYYY-MM-DD), falling back to the raw string
+function formatDateDisplay(val) {
+  const d = parseDateSafe(val);
+  if (!d) return val || '';
+  return d.toISOString().slice(0, 10);
+}
+
+// Resolve a row's date into a sortable month key ("YYYY-MM") plus a display label ("Jan 2026")
+function getMonthInfo(val) {
+  const d = parseDateSafe(val);
+  if (!d) return null;
+  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  return { key, label };
+}
+
+// Format integer with thousands separators
+function formatInt(n) { return Math.round(n).toLocaleString('en-US'); }
+
+// Format percentage to 1 decimal place
+function formatPct(n) { return (Math.round(n * 10) / 10).toFixed(1) + '%'; }
+
+// Escape a string for safe HTML insertion
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Animate a KPI number from its current displayed value to a new target
+function animateValue(el, to, isPercent) {
+  const from = parseFloat(el.dataset.rawValue || '0') || 0;
+  const duration = 600;
+  const start = performance.now();
+  function step(now) {
+    const progress = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = from + (to - from) * eased;
+    el.textContent = isPercent ? formatPct(current) : formatInt(current);
+    if (progress < 1) requestAnimationFrame(step);
+    else el.dataset.rawValue = String(to);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ----------------------------------------------------------------
+   C. DATA FETCHING
+   ---------------------------------------------------------------- */
+
+// Locate the actual JSON key for each configured tab (handles the
+// dynamic month suffix on the Summary sheet, e.g. "Summary FQA Support Jun2026")
+function buildSheetKeyMap(json) {
+  const keys = Object.keys(json || {});
+  const map = {};
+  CONFIG.TABS.forEach(tab => {
+    if (tab.matchPrefix) {
+      const found = keys.find(k => k.toLowerCase().startsWith(tab.matchPrefix));
+      map[tab.id] = found || keys[0] || tab.id;
+    } else {
+      const exact = keys.find(k => k === tab.id);
+      const loose = keys.find(k => k.toLowerCase() === tab.id.toLowerCase());
+      map[tab.id] = exact || loose || tab.id;
+    }
+  });
+  return map;
+}
+
+// Fetch the dashboard JSON from the Apps Script endpoint
+async function fetchDashboardData() {
+  const response = await fetch(CONFIG.API_URL, { method: 'GET', cache: 'no-store' });
+  if (!response.ok) throw new Error('Server responded with status ' + response.status);
+  const json = await response.json();
+  if (!json || typeof json !== 'object') throw new Error('Malformed response from data source');
+  return json;
+}
+
+// Top-level loader: handles initial load vs background refresh differently
+async function loadData(isInitial) {
+  if (isInitial) {
+    showGlobalLoading();
+  } else {
+    state.isRefreshing = true;
+    setRefreshButtonSpinning(true);
+    showRefreshToast('Refreshing data...', false);
+  }
+  try {
+    const json = await fetchDashboardData();
+    state.rawData = json;
+    state.sheetKeyMap = buildSheetKeyMap(json);
+    state.hasLoadedOnce = true;
+    showDashboard();
+    populateTabNav();
+    populateFilterOptions();
+    renderActiveTab(true);
+    updateLastUpdated();
+    if (!isInitial) showRefreshToast('Data refreshed', false, true);
+  } catch (err) {
+    console.error('FQA Dashboard fetch error:', err);
+    if (isInitial || !state.hasLoadedOnce) {
+      showGlobalError(err.message || 'Unknown error');
+    } else {
+      showRefreshToast('Refresh failed — showing last known data', true, true);
+      setLiveDotOffline(true);
+    }
+  } finally {
+    state.isRefreshing = false;
+    setRefreshButtonSpinning(false);
+  }
+}
+
+/* ----------------------------------------------------------------
+   D. TAB MANAGEMENT
+   ---------------------------------------------------------------- */
+
+function populateTabNav() {
+  const nav = document.getElementById('tabNav');
+  nav.innerHTML = '';
+  CONFIG.TABS.forEach(tab => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tab-btn' + (tab.id === state.activeTab ? ' active' : '');
+    btn.textContent = tab.label;
+    btn.setAttribute('role', 'tab');
+    btn.dataset.tabId = tab.id;
+    btn.addEventListener('click', () => switchTab(tab.id));
+    nav.appendChild(btn);
+  });
+}
+
+function switchTab(tabId) {
+  if (tabId === state.activeTab) return;
+  state.activeTab = tabId;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tabId === tabId);
+  });
+  // Reset filters when switching sheets, since value sets differ per person
+  resetFilterValues();
+  populateFilterOptions();
+  renderActiveTab(true);
+}
+
+// Returns the normalized rows for the currently active tab
+function getActiveRows() {
+  const key = state.sheetKeyMap[state.activeTab];
+  const sheet = (state.rawData && state.rawData[key]) || { data: [] };
+  const rows = Array.isArray(sheet.data) ? sheet.data : [];
+  return rows.map(normalizeRow);
+}
+
+function normalizeRow(row, idx) {
+  return {
+    NO: getField(row, ['NO', 'No']) || (idx + 1),
+    Date: getField(row, ['Date']),
+    Shift: getField(row, ['Shift']),
+    Name: getField(row, ['Name']),
+    Plant: getField(row, ['Plant']),
+    Time: getField(row, ['Time']),
+    PartName: getField(row, ['PartName', 'Part Name']),
+    PartNo: getField(row, ['PartNo', 'Part No', 'Part_No']),
+    OK_QTY: toNumber(getField(row, ['OK_QTY', 'OK Qty', 'OKQty'])),
+    NG_QTY: toNumber(getField(row, ['NG_QTY', 'NG Qty', 'NGQty'])),
+    IssueArea: getField(row, ['IssueArea', 'Issue Area']) || 'Unspecified',
+    Customer: getField(row, ['Customer']),
+    Claim: toFlag(getField(row, ['Claim'])),
+    NoClaim: toFlag(getField(row, ['NoClaim', 'No Claim'])),
+    Note: getField(row, ['Note', 'Notes']),
+    Timestamp: getField(row, ['Timestamp', 'Time Stamp'])
+  };
+}
+
+/* ----------------------------------------------------------------
+   E. FILTERING
+   ---------------------------------------------------------------- */
+
+function readFilterInputs() {
+  state.filters.search = document.getElementById('fSearch').value.trim().toLowerCase();
+  state.filters.dateFrom = document.getElementById('fDateFrom').value;
+  state.filters.dateTo = document.getElementById('fDateTo').value;
+  state.filters.shift = document.getElementById('fShift').value;
+  state.filters.plant = document.getElementById('fPlant').value;
+  state.filters.customer = document.getElementById('fCustomer').value;
+  state.filters.issueArea = document.getElementById('fIssueArea').value;
+  state.filters.partName = document.getElementById('fPartName').value;
+  state.filters.partNo = document.getElementById('fPartNo').value;
+  state.filters.claimFilter = document.getElementById('fClaim').value;
+  // Name filter only applies on the Summary tab, but is harmless to read everywhere
+  state.filters.name = document.getElementById('fName').value;
+}
+
+function resetFilterValues() {
+  state.filters = { search: '', dateFrom: '', dateTo: '', shift: '', plant: '', customer: '', issueArea: '', partName: '', partNo: '', claimFilter: '', name: '' };
+  document.getElementById('fSearch').value = '';
+  document.getElementById('fDateFrom').value = '';
+  document.getElementById('fDateTo').value = '';
+  document.getElementById('fShift').value = '';
+  document.getElementById('fPlant').value = '';
+  document.getElementById('fCustomer').value = '';
+  document.getElementById('fIssueArea').value = '';
+  document.getElementById('fPartName').value = '';
+  document.getElementById('fPartNo').value = '';
+  document.getElementById('fClaim').value = '';
+  document.getElementById('fName').value = '';
+}
+
+function applyFilters(rows) {
+  const f = state.filters;
+  const dateFrom = f.dateFrom ? new Date(f.dateFrom) : null;
+  const dateTo = f.dateTo ? new Date(f.dateTo) : null;
+  if (dateFrom) dateFrom.setHours(0, 0, 0, 0);
+  if (dateTo) dateTo.setHours(23, 59, 59, 999);
+
+  return rows.filter(r => {
+    if (f.shift && String(r.Shift) !== f.shift) return false;
+    if (f.plant && String(r.Plant) !== f.plant) return false;
+    if (f.customer && String(r.Customer) !== f.customer) return false;
+    if (f.issueArea && String(r.IssueArea) !== f.issueArea) return false;
+    if (f.partName && String(r.PartName) !== f.partName) return false;
+    if (f.partNo && String(r.PartNo) !== f.partNo) return false;
+    if (f.claimFilter === 'claim' && !(r.Claim > 0)) return false;
+    if (f.claimFilter === 'noclaim' && !(r.NoClaim > 0)) return false;
+    // Name filter is only surfaced on the Summary tab, but applies safely everywhere
+    if (f.name && String(r.Name) !== f.name) return false;
+
+    if (dateFrom || dateTo) {
+      const rd = parseDateSafe(r.Date);
+      if (!rd) return false;
+      if (dateFrom && rd < dateFrom) return false;
+      if (dateTo && rd > dateTo) return false;
+    }
+
+    if (f.search) {
+      const haystack = [r.Name, r.Plant, r.PartName, r.PartNo, r.IssueArea, r.Customer, r.Note, r.Shift]
+        .join(' ').toLowerCase();
+      if (!haystack.includes(f.search)) return false;
+    }
+    return true;
+  });
+}
+
+// Build unique sorted value lists for filter dropdowns from the full (unfiltered) tab data
+function populateFilterOptions() {
+  const rows = getActiveRows();
+  const uniques = field => {
+    const set = new Set(rows.map(r => String(r[field]).trim()).filter(v => v !== ''));
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  };
+  fillSelect('fShift', uniques('Shift'), 'All Shifts');
+  fillSelect('fPlant', uniques('Plant'), 'All Plants');
+  fillSelect('fCustomer', uniques('Customer'), 'All Customers');
+  fillSelect('fIssueArea', uniques('IssueArea'), 'All Issue Areas');
+  fillSelect('fPartName', uniques('PartName'), 'All Part Names');
+  fillSelect('fPartNo', uniques('PartNo'), 'All Part Numbers');
+  // Name Filter: dynamically populated from names available in this tab's dataset,
+  // and only ever shown while the Summary FQA Support MMth tab is active
+  fillSelect('fName', uniques('Name'), 'All Names');
+  document.getElementById('filterNameWrap').classList.toggle('hidden', state.activeTab !== 'summary');
+}
+
+function fillSelect(id, values, allLabel) {
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  sel.innerHTML = `<option value="">${allLabel}</option>` +
+    values.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+  if (values.includes(current)) sel.value = current;
+}
+
+/* ----------------------------------------------------------------
+   F. KPI RENDERING
+   ---------------------------------------------------------------- */
+
+const KPI_DEFS = [
+  { key: 'totalRecords', title: 'Total Records', icon: 'records' },
+  { key: 'totalOK', title: 'Total OK Qty', icon: 'ok' },
+  { key: 'totalNG', title: 'Total NG Qty', icon: 'ng' },
+  { key: 'totalClaim', title: 'Total Claim', icon: 'claim' },
+  { key: 'totalNoClaim', title: 'Total No Claim', icon: 'noclaim' },
+  { key: 'claimRate', title: 'Claim Rate %', icon: 'rate', isPercent: true }
+];
+
+const KPI_ICON_SVGS = {
+  records: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>',
+  ok: '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+  ng: '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
+  claim: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h2"/>',
+  noclaim: '<path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/><path d="M9 12l2 2 4-4"/>',
+  rate: '<circle cx="12" cy="12" r="10"/><path d="M8 12.5l2.5 2.5L16 9"/>'
+};
+
+function computeKpis(rows) {
+  let totalOK = 0, totalNG = 0, totalClaim = 0, totalNoClaim = 0;
+  rows.forEach(r => { totalOK += r.OK_QTY; totalNG += r.NG_QTY; totalClaim += r.Claim; totalNoClaim += r.NoClaim; });
+  const denom = totalClaim + totalNoClaim;
+  const claimRate = denom > 0 ? (totalClaim / denom) * 100 : 0;
+  return { totalRecords: rows.length, totalOK, totalNG, totalClaim, totalNoClaim, claimRate };
+}
+
+function renderKpiCards(kpis) {
+  const grid = document.getElementById('kpiGrid');
+  if (!grid.children.length) {
+    grid.innerHTML = KPI_DEFS.map(def => `
+      <div class="kpi-card" id="kpiCard-${def.key}">
+        <div class="kpi-top">
+          <div class="kpi-icon ${def.icon === 'ng' || def.icon === 'claim' ? def.icon : (def.icon === 'rate' ? 'rate' : '')}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${KPI_ICON_SVGS[def.icon]}</svg>
+          </div>
+        </div>
+        <div class="kpi-value" id="kpiVal-${def.key}" data-raw-value="0">0</div>
+        <div class="kpi-title">${def.title}</div>
+      </div>
+    `).join('');
+  }
+  KPI_DEFS.forEach(def => {
+    const valueEl = document.getElementById(`kpiVal-${def.key}`);
+    const cardEl = document.getElementById(`kpiCard-${def.key}`);
+    animateValue(valueEl, kpis[def.key], !!def.isPercent);
+    cardEl.classList.remove('flash');
+    requestAnimationFrame(() => cardEl.classList.add('flash'));
+  });
+}
+
+/* ----------------------------------------------------------------
+   G. CHART RENDERING
+   ---------------------------------------------------------------- */
+
+function destroyChart(key) {
+  if (state.charts[key]) { state.charts[key].destroy(); state.charts[key] = null; }
+}
+
+function baseChartOptions(overrides) {
+  return Object.assign({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { labels: { font: { family: "'Inter',sans-serif", size: 11 }, color: '#5f7268' } },
+      tooltip: { backgroundColor: '#0f5132', titleFont: { family: "'Inter',sans-serif" }, bodyFont: { family: "'Inter',sans-serif" } }
+    }
+  }, overrides || {});
+}
+
+function renderCharts(rows) {
+  renderClaimChart(rows);
+  renderClaimDetail(rows);
+  renderClaimTrendChart(rows);
+  renderNgMonthlyTable(rows);
+  renderNgTrendChart(rows);
+  renderIssueAreaChart(rows);
+  renderOperatorRanking(rows);
+  renderNgProblemTable(rows);
+}
+
+// Monthly Claim Trend: line chart counting Claim records grouped by month
+function renderClaimTrendChart(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    if (r.Claim > 0) {
+      const m = getMonthInfo(r.Date);
+      const key = m ? m.key : 'Unknown';
+      const label = m ? m.label : 'Unknown';
+      if (!map.has(key)) map.set(key, { label, count: 0 });
+      map.get(key).count += 1;
+    }
+  });
+  const sorted = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  destroyChart('claimTrend');
+  const ctx = document.getElementById('chartClaimTrend').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, 'rgba(214,69,90,0.28)');
+  gradient.addColorStop(1, 'rgba(214,69,90,0.02)');
+  state.charts.claimTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(e => e[1].label),
+      datasets: [{
+        label: 'Claims', data: sorted.map(e => e[1].count),
+        borderColor: CONFIG.CHART_COLORS.claim, backgroundColor: gradient, fill: true,
+        tension: 0.35, pointRadius: 3, pointBackgroundColor: CONFIG.CHART_COLORS.claim
+      }]
+    },
+    options: baseChartOptions({
+      plugins: { legend: { display: false }, tooltip: baseChartOptions().plugins.tooltip },
+      scales: { y: { beginAtZero: true, grid: { color: '#eef2f0' }, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+    })
+  });
+}
+
+// NG Issue Records table: monthly NG statistics (Month, NG Records, Total NG Qty, Top Issue Area, Top Part No)
+function renderNgMonthlyTable(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const m = getMonthInfo(r.Date);
+    const key = m ? m.key : 'Unknown';
+    const label = m ? m.label : 'Unknown';
+    if (!map.has(key)) map.set(key, { label, ngRecords: 0, ngQty: 0, issueMap: new Map(), partMap: new Map() });
+    const entry = map.get(key);
+    if (r.NG_QTY > 0) {
+      entry.ngRecords += 1;
+      entry.ngQty += r.NG_QTY;
+      const issueKey = r.IssueArea || 'Unspecified';
+      entry.issueMap.set(issueKey, (entry.issueMap.get(issueKey) || 0) + 1);
+      const partKey = r.PartNo || 'Unknown';
+      entry.partMap.set(partKey, (entry.partMap.get(partKey) || 0) + r.NG_QTY);
+    }
+  });
+  const sorted = Array.from(map.entries())
+    .filter(([, e]) => e.ngRecords > 0)
+    .sort((a, b) => a[0].localeCompare(b[0]));
+  const body = document.getElementById('ngMonthlyTableBody');
+  if (!sorted.length) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--c-muted-2);padding:14px;">No NG records for the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML = sorted.map(([, e]) => {
+    const topIssue = e.issueMap.size ? Array.from(e.issueMap.entries()).sort((a, b) => b[1] - a[1])[0][0] : '—';
+    const topPart = e.partMap.size ? Array.from(e.partMap.entries()).sort((a, b) => b[1] - a[1])[0][0] : '—';
+    return `
+      <tr>
+        <td>${escapeHtml(e.label)}</td>
+        <td class="num">${formatInt(e.ngRecords)}</td>
+        <td class="num">${formatInt(e.ngQty)}</td>
+        <td>${escapeHtml(topIssue)}</td>
+        <td>${escapeHtml(topPart)}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// Monthly NG Trend: line chart counting NG Issue Records (NG_QTY > 0) grouped by month
+function renderNgTrendChart(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    if (r.NG_QTY > 0) {
+      const m = getMonthInfo(r.Date);
+      const key = m ? m.key : 'Unknown';
+      const label = m ? m.label : 'Unknown';
+      if (!map.has(key)) map.set(key, { label, count: 0 });
+      map.get(key).count += 1;
+    }
+  });
+  const sorted = Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+  destroyChart('ngTrend');
+  const ctx = document.getElementById('chartNgTrend').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 260);
+  gradient.addColorStop(0, 'rgba(15,81,50,0.28)');
+  gradient.addColorStop(1, 'rgba(15,81,50,0.02)');
+  state.charts.ngTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: sorted.map(e => e[1].label),
+      datasets: [{
+        label: 'NG Issue Records', data: sorted.map(e => e[1].count),
+        borderColor: CONFIG.CHART_COLORS.ok, backgroundColor: gradient, fill: true,
+        tension: 0.35, pointRadius: 3, pointBackgroundColor: CONFIG.CHART_COLORS.ok
+      }]
+    },
+    options: baseChartOptions({
+      plugins: { legend: { display: false }, tooltip: baseChartOptions().plugins.tooltip },
+      scales: { y: { beginAtZero: true, grid: { color: '#eef2f0' }, ticks: { precision: 0 } }, x: { grid: { display: false } } }
+    })
+  });
+}
+
+// Operator Ranking: ranks operators (by Name) by total inspection records
+function renderOperatorRanking(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const key = r.Name || 'Unknown';
+    if (!map.has(key)) map.set(key, { name: key, records: 0, ok: 0, ng: 0, claims: 0 });
+    const entry = map.get(key);
+    entry.records += 1;
+    entry.ok += r.OK_QTY;
+    entry.ng += r.NG_QTY;
+    if (r.Claim > 0) entry.claims += 1;
+  });
+  const sorted = Array.from(map.values()).sort((a, b) => b.records - a.records).slice(0, 10);
+  const body = document.getElementById('operatorRankingBody');
+  if (!sorted.length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--c-muted-2);padding:14px;">No records for the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML = sorted.map((e, idx) => `
+    <tr>
+      <td class="num">${idx + 1}</td>
+      <td>${escapeHtml(e.name)}</td>
+      <td class="num">${formatInt(e.records)}</td>
+      <td class="num">${formatInt(e.ok)}</td>
+      <td class="num">${formatInt(e.ng)}</td>
+      <td class="num">${formatInt(e.claims)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderClaimChart(rows) {
+  const totalClaim = rows.reduce((s, r) => s + r.Claim, 0);
+  const totalNoClaim = rows.reduce((s, r) => s + r.NoClaim, 0);
+  destroyChart('claim');
+  const ctx = document.getElementById('chartClaim').getContext('2d');
+  state.charts.claim = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Claim', 'No Claim'],
+      datasets: [{ data: [totalClaim, totalNoClaim], backgroundColor: [CONFIG.CHART_COLORS.claim, CONFIG.CHART_COLORS.noclaim], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: baseChartOptions({ cutout: '64%' })
+  });
+}
+
+// Claim Detail panel: lists only the claim = TRUE records under the doughnut chart
+function renderClaimDetail(rows) {
+  const claimRows = rows.filter(r => r.Claim > 0);
+  const body = document.getElementById('claimDetailBody');
+  document.getElementById('claimDetailCount').textContent = `${formatInt(claimRows.length)} records`;
+  if (!claimRows.length) {
+    body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--c-muted-2);padding:14px;">No claim records for the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML = claimRows.map(r => `
+    <tr>
+      <td>${escapeHtml(r.PartNo)}</td>
+      <td>${escapeHtml(r.PartName)}</td>
+      <td>${escapeHtml(r.IssueArea)}</td>
+      <td>${escapeHtml(r.Customer)}</td>
+      <td>${escapeHtml(r.Note)}</td>
+      <td>${escapeHtml(formatDateDisplay(r.Date))}</td>
+    </tr>
+  `).join('');
+}
+
+// NG Problem Summary table: replaces the Top 10 NG Part Numbers chart with a compact table
+function renderNgProblemTable(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const key = r.PartNo || 'Unknown';
+    if (!map.has(key)) map.set(key, { partNo: key, partName: r.PartName, issueArea: r.IssueArea, ngRecords: 0, ngQty: 0 });
+    const entry = map.get(key);
+    entry.ngQty += r.NG_QTY;
+    if (r.NG_QTY > 0) {
+      entry.ngRecords += 1;
+      if (r.IssueArea) entry.issueArea = r.IssueArea;
+      if (r.PartName) entry.partName = r.PartName;
+    }
+  });
+  const sorted = Array.from(map.values()).filter(e => e.ngQty > 0).sort((a, b) => b.ngQty - a.ngQty).slice(0, 10);
+  const body = document.getElementById('ngProblemTableBody');
+  if (!sorted.length) {
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--c-muted-2);padding:14px;">No NG records for the current filters</td></tr>';
+    return;
+  }
+  body.innerHTML = sorted.map(e => `
+    <tr>
+      <td>${escapeHtml(e.partNo)}</td>
+      <td>${escapeHtml(e.partName)}</td>
+      <td>${escapeHtml(e.issueArea)}</td>
+      <td class="num">${formatInt(e.ngRecords)}</td>
+      <td class="num">${formatInt(e.ngQty)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderIssueAreaChart(rows) {
+  const map = new Map();
+  rows.forEach(r => { const key = r.IssueArea || 'Unspecified'; map.set(key, (map.get(key) || 0) + 1); });
+  const sorted = Array.from(map.entries()).sort((a, b) => b[1] - a[1]);
+  destroyChart('issue');
+  const ctx = document.getElementById('chartIssue').getContext('2d');
+  state.charts.issue = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: sorted.map(e => e[0]),
+      datasets: [{ data: sorted.map(e => e[1]), backgroundColor: CONFIG.CHART_COLORS.palette, borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: baseChartOptions({ plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } })
+  });
+}
+
+/* ----------------------------------------------------------------
+   H. TABLE (DataTables) RENDERING
+   ---------------------------------------------------------------- */
+
+function renderTableRow(r) {
+  return [
+    r.NO,
+    formatDateDisplay(r.Date),
+    escapeHtml(r.Shift),
+    escapeHtml(r.Name),
+    escapeHtml(r.Plant),
+    escapeHtml(r.Time),
+    escapeHtml(r.PartName),
+    escapeHtml(r.PartNo),
+    `<span class="num-cell">${formatInt(r.OK_QTY)}</span>`,
+    r.NG_QTY > 0 ? `<span class="num-cell ng-flag">${formatInt(r.NG_QTY)}</span>` : `<span class="num-cell">${formatInt(r.NG_QTY)}</span>`,
+    escapeHtml(r.IssueArea),
+    escapeHtml(r.Customer),
+    r.Claim > 0 ? '<span class="flag-pill yes">Yes</span>' : '<span class="flag-pill no">No</span>',
+    r.NoClaim > 0 ? '<span class="flag-pill no">Yes</span>' : '<span class="flag-pill yes">No</span>',
+    escapeHtml(r.Note),
+    escapeHtml(r.Timestamp)
+  ];
+}
+
+function initDataTableIfNeeded() {
+  if (state.dataTable) return;
+  state.dataTable = $('#dataTable').DataTable({
+    data: [],
+    columns: [
+      { title: 'NO' }, { title: 'Date' }, { title: 'Shift' }, { title: 'Name' }, { title: 'Plant' },
+      { title: 'Time' }, { title: 'Part Name' }, { title: 'Part No' }, { title: 'OK Qty' }, { title: 'NG Qty' },
+      { title: 'Issue Area' }, { title: 'Customer' }, { title: 'Claim' }, { title: 'No Claim' }, { title: 'Note' }, { title: 'Timestamp' }
+    ],
+    responsive: true,
+    scrollY: '480px',
+    scrollCollapse: true,
+    deferRender: true,
+    pageLength: 25,
+    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+    dom: '<"dt-top"Bf>rt<"dt-bottom"lip>',
+    buttons: [
+      { extend: 'colvis', text: 'Columns' },
+      { extend: 'copyHtml5', text: 'Copy' },
+      { extend: 'csvHtml5', text: 'CSV' },
+      { extend: 'excelHtml5', text: 'Excel' },
+      { extend: 'print', text: 'Print' }
+    ],
+    language: {
+      search: '',
+      searchPlaceholder: 'Quick table search...',
+      info: 'Showing _START_ to _END_ of _TOTAL_ entries',
+      infoEmpty: 'No matching records found',
+      infoFiltered: '(filtered from _MAX_ total)',
+      emptyTable: 'No records available for this view',
+      lengthMenu: 'Show _MENU_ entries',
+      paginate: { previous: '\u2039', next: '\u203a' }
+    }
+  });
+}
+
+function renderTable(rows) {
+  showTableLoading(true);
+  initDataTableIfNeeded();
+  const dt = state.dataTable;
+  dt.clear();
+  dt.rows.add(rows.map(renderTableRow));
+  dt.draw();
+  document.getElementById('rowCountBadge').textContent = `${formatInt(rows.length)} records`;
+  showTableLoading(false);
+}
+
+/* ----------------------------------------------------------------
+   I. CLOCK & AUTO-REFRESH
+   ---------------------------------------------------------------- */
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clockNow').textContent = now.toLocaleTimeString('en-GB');
+}
+
+function updateLastUpdated() {
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-GB');
+  setLiveDotOffline(false);
+}
+
+function setLiveDotOffline(isOffline) {
+  document.getElementById('liveDot').classList.toggle('offline', isOffline);
+}
+
+function setRefreshButtonSpinning(isSpinning) {
+  document.getElementById('btnRefresh').classList.toggle('spinning', isSpinning);
+}
+
+function showRefreshToast(text, isWarning, autoHide) {
+  const toast = document.getElementById('refreshToast');
+  document.getElementById('refreshToastText').textContent = text;
+  toast.classList.toggle('warn', !!isWarning);
+  toast.classList.add('show');
+  if (autoHide) setTimeout(() => toast.classList.remove('show'), 2600);
+}
+
+function startAutoRefresh() {
+  if (state.refreshTimer) clearInterval(state.refreshTimer);
+  state.refreshTimer = setInterval(() => loadData(false), CONFIG.REFRESH_MS);
+}
+
+/* ----------------------------------------------------------------
+   J. ADD RECORD (DATA ENTRY)
+   ---------------------------------------------------------------- */
+
+// Maps the active tab to the exact sheet name the API should write to.
+// Resolved dynamically from the live API response (state.sheetKeyMap) so the
+// Summary tab always matches its real, current month/year key (e.g. the
+// live "Summary FQA Support MMth2026" sheet) instead of a hardcoded string.
+function resolveActiveSheetName() {
+  return state.sheetKeyMap[state.activeTab] || state.activeTab;
+}
+
+const ADD_RECORD_REQUIRED = [
+  { id: 'fldDate', label: 'Date' },
+  { id: 'fldShift', label: 'Shift' },
+  { id: 'fldName', label: 'Name' },
+  { id: 'fldPlant', label: 'Plant' },
+  { id: 'fldPartName', label: 'Part Name' },
+  { id: 'fldPartNo', label: 'Part No' }
+];
+
+// Populate the form's <datalist> suggestions from the active tab's current data
+function populateAddRecordDatalists() {
+  const rows = getActiveRows();
+  const uniques = field => Array.from(new Set(rows.map(r => String(r[field]).trim()).filter(v => v !== ''))).sort((a, b) => a.localeCompare(b));
+  const fill = (id, values) => {
+    document.getElementById(id).innerHTML = values.map(v => `<option value="${escapeHtml(v)}"></option>`).join('');
+  };
+  fill('dlShift', uniques('Shift'));
+  fill('dlName', uniques('Name'));
+  fill('dlPlant', uniques('Plant'));
+  fill('dlPartName', uniques('PartName'));
+  fill('dlPartNo', uniques('PartNo'));
+  fill('dlIssueArea', uniques('IssueArea'));
+  fill('dlCustomer', uniques('Customer'));
+}
+
+function resetAddRecordForm() {
+  document.getElementById('addRecordForm').reset();
+  document.getElementById('addRecordError').classList.add('hidden');
+  document.getElementById('addRecordError').textContent = '';
+  document.querySelectorAll('#addRecordForm .field-invalid').forEach(el => el.classList.remove('field-invalid'));
+}
+
+function openAddRecordModal() {
+  resetAddRecordForm();
+  populateAddRecordDatalists();
+  document.getElementById('addRecordSheetLabel').textContent = `Saving to ${resolveActiveSheetName()}`;
+  const overlay = document.getElementById('addRecordOverlay');
+  overlay.classList.remove('hidden');
+  requestAnimationFrame(() => overlay.classList.add('show'));
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('fldDate').focus(), 50);
+}
+
+function closeAddRecordModal() {
+  if (state.savingRecord) return;
+  const overlay = document.getElementById('addRecordOverlay');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+  setTimeout(() => overlay.classList.add('hidden'), 200);
+}
+
+function setAddRecordSaving(isSaving) {
+  state.savingRecord = isSaving;
+  document.getElementById('btnSaveRecord').disabled = isSaving;
+  document.getElementById('btnCancelAddRecord').disabled = isSaving;
+  document.getElementById('saveRecordSpinner').classList.toggle('hidden', !isSaving);
+  document.getElementById('saveRecordLabel').textContent = isSaving ? 'Saving...' : 'Save Record';
+}
+
+function showAddRecordError(message) {
+  const el = document.getElementById('addRecordError');
+  el.textContent = message;
+  el.classList.remove('hidden');
+}
+
+// Validates required fields and collects all form values into a normalized record object
+function validateAddRecordForm() {
+  let valid = true;
+  const missing = [];
+  document.querySelectorAll('#addRecordForm .field-invalid').forEach(el => el.classList.remove('field-invalid'));
+
+  ADD_RECORD_REQUIRED.forEach(f => {
+    const el = document.getElementById(f.id);
+    if (!el.value || !String(el.value).trim()) {
+      valid = false;
+      missing.push(f.label);
+      el.classList.add('field-invalid');
+    }
+  });
+
+  if (!valid) {
+    showAddRecordError(`Please fill in required fields: ${missing.join(', ')}`);
+  }
+
+  const values = {
+    Date: document.getElementById('fldDate').value,
+    Shift: document.getElementById('fldShift').value.trim(),
+    Name: document.getElementById('fldName').value.trim(),
+    Plant: document.getElementById('fldPlant').value.trim(),
+    Time: document.getElementById('fldTime').value,
+    PartName: document.getElementById('fldPartName').value.trim(),
+    PartNo: document.getElementById('fldPartNo').value.trim(),
+    OK: document.getElementById('fldOk').checked,
+    OK_QTY: toNumber(document.getElementById('fldOkQty').value),
+    NG: document.getElementById('fldNg').checked,
+    NG_QTY: toNumber(document.getElementById('fldNgQty').value),
+    IssueArea: document.getElementById('fldIssueArea').value.trim(),
+    Customer: document.getElementById('fldCustomer').value.trim(),
+    Claim: document.getElementById('fldClaim').checked,
+    NoClaim: document.getElementById('fldNoClaim').checked,
+    Note: document.getElementById('fldNote').value.trim(),
+    Timestamp: new Date().toISOString()
+  };
+
+  return { valid, values };
+}
+
+// Submits the new record via POST to the same Apps Script endpoint.
+// Sent as text/plain to avoid a CORS preflight (Apps Script web apps commonly
+// don't respond to OPTIONS); the backend should JSON.parse(e.postData.contents).
+async function submitNewRecord(values) {
+  const payload = {
+    action: 'addRecord',
+    sheetName: resolveActiveSheetName(),
+    record: values
+  };
+  const response = await fetch(CONFIG.API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) throw new Error('Server responded with status ' + response.status);
+  let result = null;
+  try { result = await response.json(); } catch (e) { /* a non-JSON success response is acceptable */ }
+  if (result && (result.success === false || result.error)) {
+    throw new Error(result.message || result.error || 'Failed to save record');
+  }
+  return result;
+}
+
+async function handleAddRecordSubmit(event) {
+  event.preventDefault();
+  if (state.savingRecord) return;
+  document.getElementById('addRecordError').classList.add('hidden');
+
+  const { valid, values } = validateAddRecordForm();
+  if (!valid) return;
+
+  setAddRecordSaving(true);
+  try {
+    await submitNewRecord(values);
+    showRefreshToast('Record saved successfully', false, true);
+    closeAddRecordModal();
+    // Refresh dashboard data automatically after a successful save
+    setTimeout(() => loadData(false), 900);
+  } catch (err) {
+    console.error('FQA Dashboard add-record error:', err);
+    showAddRecordError(err.message || 'Failed to save record. Please try again.');
+  } finally {
+    setAddRecordSaving(false);
+  }
+}
+
+/* ----------------------------------------------------------------
+   K. RENDER PIPELINE, EVENT WIRING & BOOTSTRAP
+   ---------------------------------------------------------------- */
+
+// Central render function: reads filters, recomputes KPIs/charts/table for active tab
+function renderActiveTab() {
+  readFilterInputs();
+  const allRows = getActiveRows();
+  const filtered = applyFilters(allRows);
+  const kpis = computeKpis(filtered);
+  renderKpiCards(kpis);
+  renderCharts(filtered);
+  renderTable(filtered);
+  document.getElementById('tableTitle').textContent =
+    state.activeTab === 'summary' ? 'All Inspection Records' : `${state.activeTab} — Inspection Records`;
+}
+
+const debouncedRender = debounce(renderActiveTab, 300);
+
+function wireEvents() {
+  document.getElementById('btnRefresh').addEventListener('click', () => { if (!state.isRefreshing) loadData(false); });
+  document.getElementById('btnRetry').addEventListener('click', () => loadData(true));
+  document.getElementById('btnClearFilters').addEventListener('click', () => { resetFilterValues(); renderActiveTab(); });
+
+  document.getElementById('fSearch').addEventListener('input', debouncedRender);
+  document.getElementById('fDateFrom').addEventListener('change', renderActiveTab);
+  document.getElementById('fDateTo').addEventListener('change', renderActiveTab);
+  document.getElementById('fShift').addEventListener('change', renderActiveTab);
+  document.getElementById('fPlant').addEventListener('change', renderActiveTab);
+  document.getElementById('fCustomer').addEventListener('change', renderActiveTab);
+  document.getElementById('fIssueArea').addEventListener('change', renderActiveTab);
+  document.getElementById('fPartName').addEventListener('change', renderActiveTab);
+  document.getElementById('fPartNo').addEventListener('change', renderActiveTab);
+  document.getElementById('fClaim').addEventListener('change', renderActiveTab);
+  document.getElementById('fName').addEventListener('change', renderActiveTab);
+
+  // Add Record modal
+  document.getElementById('btnOpenAddRecord').addEventListener('click', openAddRecordModal);
+  document.getElementById('btnCloseAddRecord').addEventListener('click', closeAddRecordModal);
+  document.getElementById('btnCancelAddRecord').addEventListener('click', closeAddRecordModal);
+  document.getElementById('addRecordOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'addRecordOverlay') closeAddRecordModal();
+  });
+  document.getElementById('addRecordForm').addEventListener('submit', handleAddRecordSubmit);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !document.getElementById('addRecordOverlay').classList.contains('hidden')) {
+      closeAddRecordModal();
+    }
+  });
+
+  window.addEventListener('resize', debounce(() => {
+    Object.values(state.charts).forEach(c => c && c.resize());
+  }, 200));
+}
+
+function showGlobalLoading() {
+  document.getElementById('globalLoading').classList.remove('hidden');
+  document.getElementById('globalError').classList.add('hidden');
+  document.getElementById('dashboardContent').classList.add('hidden');
+  document.getElementById('tabNav').classList.add('hidden');
+}
+
+function showGlobalError(message) {
+  document.getElementById('globalLoading').classList.add('hidden');
+  document.getElementById('dashboardContent').classList.add('hidden');
+  document.getElementById('tabNav').classList.add('hidden');
+  document.getElementById('errDetail').textContent = message || '';
+  document.getElementById('globalError').classList.remove('hidden');
+}
+
+function showDashboard() {
+  document.getElementById('globalLoading').classList.add('hidden');
+  document.getElementById('globalError').classList.add('hidden');
+  document.getElementById('dashboardContent').classList.remove('hidden');
+  document.getElementById('tabNav').classList.remove('hidden');
+}
+
+function showTableLoading(isLoading) {
+  document.getElementById('tableLoading').classList.toggle('hidden', !isLoading);
+}
+
+// Application bootstrap
+function init() {
+  wireEvents();
+  updateClock();
+  state.clockTimer = setInterval(updateClock, 1000);
+  loadData(true);
+  startAutoRefresh();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
